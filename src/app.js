@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const axios   = require('axios');
+const logger  = require('./logger');
 
 const authRouter = require('./routes/auth');
 
@@ -8,9 +9,7 @@ const app  = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
-
 app.use('/auth', authRouter);
-
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
@@ -28,21 +27,21 @@ const startServer = async () => {
   while (retries > 0) {
     try {
       await axios.get(`${IO_URL}/health`);
-      console.log('IO Service is reachable');
+      logger.info('IO Service is reachable');
       break;
     } catch {
       retries--;
-      console.log(`Waiting for IO Service... (${retries} retries left)`);
+      logger.warn('Waiting for IO Service', { retriesLeft: retries });
       await new Promise(r => setTimeout(r, 3000)); // așteptăm 3 secunde
     }
   }
 
   if (retries === 0) {
-    console.error('IO Service unreachable. Exiting.');
+    logger.error('IO Service unreachable. Exiting.');
     process.exit(1);
   }
 
-  app.listen(PORT, () => console.log(`Auth Service running on port ${PORT}`));
+  app.listen(PORT, () => logger.info('Auth Service running', { port: PORT }));
 };
 
 startServer();
