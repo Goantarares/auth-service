@@ -15,7 +15,7 @@ const internalHeaders = {
 
 const signToken = (user) => {
   return jwt.sign(
-    { userId: user.id, role: user.role },
+    { userId: user.id, role: user.role, iss: 'flights-app' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
   );
